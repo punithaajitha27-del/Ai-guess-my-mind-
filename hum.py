@@ -161,10 +161,6 @@ st.markdown(
         font-size: 17px !important;
     }
 
-    /* ---------- Animations ---------- */
-    @keyframes dance {
-        0%, 100% { transform: rotate(-10deg) translateY(0); }
-        25% { transform: rotate(10deg) translateY(-12px); }
         50% { transform: rotate(-10deg) translateY(0); }
         75% { transform: rotate(10deg) translateY(-12px); }
     }
@@ -251,10 +247,6 @@ QUESTION_BANK = [
     {"category":"Maths","question":"What is 100 − 36?","options":["54","64","74","84"],"answer":"64"},
     {"category":"Maths","question":"What is 12 × 12?","options":["124","144","154","164"],"answer":"144"},
     {"category":"Maths","question":"What is 50% of 200?","options":["50","75","100","150"],"answer":"100"},
-    # Science
-    {"category":"Science","question":"Which gas do plants absorb during photosynthesis?","options":["Oxygen","Nitrogen","Carbon dioxide","Hydrogen"],"answer":"Carbon dioxide"},
-    {"category":"Science","question":"What is the chemical formula for water?","options":["CO2","H2O","O2","NaCl"],"answer":"H2O"},
-    {"category":"Science","question":"Which organ pumps blood around the body?","options":["Brain","Lungs","Heart","Kidney"],"answer":"Heart"},
     {"category":"Science","question":"Which planet is known as the Red Planet?","options":["Mars","Venus","Earth","Saturn"],"answer":"Mars"},
     {"category":"Science","question":"What is the boiling point of water at sea level?","options":["50°C","75°C","100°C","150°C"],"answer":"100°C"},
     {"category":"Science","question":"Which part of a plant mainly absorbs water?","options":["Leaves","Flowers","Roots","Fruits"],"answer":"Roots"},
@@ -436,6 +428,14 @@ if st.session_state.screen == "home":
 elif st.session_state.screen == "quiz":
     total = st.session_state.total_questions
     st.subheader(f"⚔️ Round {st.session_state.round_id}")
+    st.write(f"👤 Player: **{st.session_state.player_name}**")
+    st.info(f"Answer all {total} questions. The AI will answer the same questions.")
+
+    with st.form(key=f"quiz_form_{st.session_state.round_id}"):
+        answers = []
+        for index, question in enumerate(st.session_state.questions):
+            st.markdown(f"### 🟣 Question {index + 1} of {total}")
+            st.caption(f"📚 {question['category']}")
             st.markdown(f"**{question['question']}**")
             selected = st.radio(
                 "Choose your answer:",
@@ -494,7 +494,7 @@ elif st.session_state.screen == "results":
         st.info("🤖 AI ROBOT WINS THIS ROUND!")
         st.html('<div class="winner-box"><div style="font-size:64px;">🤖 🏆 ⚡</div><h2 style="color:#2a5aa8;font-weight:800;">AI CHAMPION!</h2></div>')
     else:
-        st.warning("🤝 It is a draw! Both achampions.")
+        st.warning("🤝 It is a draw! Both are champions.")
         st.html('<div class="winner-box"><div style="font-size:64px;">👧 🤝 🤖</div><h2 style="color:#7b1fa2;font-weight:800;">BOTH ARE CHAMPIONS!</h2></div>')
 
     st.subheader("📊 Score comparison")
