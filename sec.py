@@ -1,582 +1,933 @@
+
 import streamlit as st
 import random
 
+# =====================================
+# PAGE CONFIG
+# =====================================
+
 st.set_page_config(
-    page_title="Cyber Shield",
-    page_icon="🛡️",
+    page_title="Human vs AI Arena",
+    page_icon="🤖",
     layout="wide"
 )
 
-# ---------------- CSS DESIGN ----------------
+# =====================================
+# CSS DESIGN
+# =====================================
 
 st.markdown("""
 <style>
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+
 .stApp {
     background: linear-gradient(
         135deg,
-        #160047,
-        #3b087c,
-        #075985,
-        #111827
+        #ffffff,
+        #fff0f8,
+        #eefaff,
+        #f8f0ff
     );
-    background-attachment: fixed;
-}
-
-h1, h2, h3, p, label {
-    color: white !important;
 }
 
 .block-container {
+    max-width: 1150px;
     padding-top: 2rem;
-    max-width: 1100px;
 }
 
-/* BUTTON DESIGN */
+h1, h2, h3 {
+    font-family: 'Poppins', sans-serif !important;
+    color: #873caa !important;
+}
+
+p, label {
+    color: #444 !important;
+}
+
+/* Dancing animation */
+
+@keyframes dance {
+    0% { transform: rotate(-12deg) translateY(0); }
+    25% { transform: rotate(12deg) translateY(-15px); }
+    50% { transform: rotate(-12deg) translateY(0); }
+    75% { transform: rotate(12deg) translateY(-15px); }
+    100% { transform: rotate(-12deg) translateY(0); }
+}
+
+/* Walking animation */
+
+@keyframes walk {
+    0% { transform: translateX(-25px) rotate(-8deg); }
+    50% { transform: translateX(25px) rotate(8deg); }
+    100% { transform: translateX(-25px) rotate(-8deg); }
+}
+
+/* Robot floating */
+
+@keyframes float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0); }
+}
+
+@keyframes sparkle {
+    0% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.3); }
+    100% { opacity: 0.3; transform: scale(0.8); }
+}
+
+.doll {
+    display: inline-block;
+    font-size: 60px;
+    animation: dance 1.3s infinite ease-in-out;
+    margin: 5px;
+}
+
+.walking-doll {
+    display: inline-block;
+    font-size: 60px;
+    animation: walk 2s infinite ease-in-out;
+    margin: 5px;
+}
+
+.robot {
+    display: inline-block;
+    font-size: 70px;
+    animation: float 2s infinite ease-in-out;
+}
+
+.sparkle {
+    display: inline-block;
+    font-size: 30px;
+    animation: sparkle 1.5s infinite;
+}
+
+/* Cards */
+
+.player-card {
+    background: linear-gradient(135deg, #ffe0f0, #f5e5ff);
+    border: 3px solid #ed8acb;
+    border-radius: 25px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 6px 20px #f3c5e5;
+}
+
+.ai-card {
+    background: linear-gradient(135deg, #dff7ff, #e9e1ff);
+    border: 3px solid #83c9ed;
+    border-radius: 25px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 6px 20px #c9eaff;
+}
+
+/* Buttons */
 
 .stButton > button {
-    background: linear-gradient(90deg, #ff4ecd, #7c4dff);
-    color: white !important;
+    width: 100%;
+    min-height: 55px;
     border: none;
-    border-radius: 15px;
-    height: 50px;
-    font-size: 18px;
-    font-weight: bold;
+    border-radius: 18px;
+    background: linear-gradient(90deg, #ff72b6, #ad70ff);
+    color: white !important;
+    font-size: 17px;
+    font-weight: 800;
     transition: 0.3s;
 }
 
 .stButton > button:hover {
     transform: scale(1.04);
-    background: linear-gradient(90deg, #00e5ff, #00c853);
+    box-shadow: 0 5px 20px #d5b4ff;
 }
 
-/* INPUT BOX */
+/* Input */
 
 .stTextInput input {
+    background: white !important;
+    color: #333 !important;
+    border: 2px solid #e8a2d1 !important;
     border-radius: 12px;
 }
 
-/* RADIO OPTIONS */
+/* Question box */
 
-.stRadio {
-    background: rgba(255,255,255,0.08);
+[data-testid="stRadio"] {
+    background: #fff0f8;
+    border: 1px solid #f2c1df;
     padding: 15px;
     border-radius: 15px;
 }
 
-/* ANIMATED CHARACTERS */
+/* Metrics */
 
-@keyframes float {
-    0% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-20px) rotate(10deg); }
-    100% { transform: translateY(0px) rotate(0deg); }
-}
-
-@keyframes glow {
-    0% { text-shadow: 0 0 5px #00e5ff; }
-    50% { text-shadow: 0 0 25px #ff4ecd; }
-    100% { text-shadow: 0 0 5px #00e5ff; }
-}
-
-.cartoon {
-    font-size: 48px;
-    display: inline-block;
-    animation: float 3s ease-in-out infinite;
-    margin: 10px;
-}
-
-.title {
-    text-align: center;
-    font-size: 48px;
-    font-weight: bold;
-    animation: glow 2s infinite;
-}
-
-.subtitle {
-    text-align: center;
-    font-size: 22px;
+[data-testid="stMetric"] {
+    background: #fff0f8;
+    padding: 15px;
+    border-radius: 15px;
+    border: 2px solid #edb4db;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 
-# ---------------- CARTOON CHARACTERS ----------------
+# =====================================
+# QUESTION BANK
+# =====================================
 
-st.markdown("""
-<div style="text-align:center;">
-    <span class="cartoon">🤖</span>
-    <span class="cartoon">🦸</span>
-    <span class="cartoon">🛡️</span>
-    <span class="cartoon">👾</span>
-    <span class="cartoon">🦹</span>
-</div>
-""", unsafe_allow_html=True)
+QUESTION_BANK = [
 
-
-# ---------------- TITLE ----------------
-
-st.markdown(
-    '<div class="title">🛡️ CYBER SHIELD</div>',
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    '<div class="subtitle">✨ AI Cyber Safety Challenge ✨</div>',
-    unsafe_allow_html=True
-)
-
-st.markdown("---")
-
-
-# ---------------- QUESTION BANK ----------------
-
-question_bank = [
+    # GENERAL KNOWLEDGE
 
     {
-        "question": "You receive a message saying you won ₹50,000. It asks you to click an unknown link. What will you do?",
-        "options": [
-            "Click the link",
-            "Ignore and verify the message",
-            "Share it with friends"
-        ],
-        "answer": "Ignore and verify the message",
-        "tip": "Never trust unexpected prize messages. Verify them through official sources."
+        "category": "General Knowledge",
+        "question": "Which is the largest planet?",
+        "options": ["Earth", "Jupiter", "Mars", "Venus"],
+        "answer": "Jupiter"
+    },
+    {
+        "category": "General Knowledge",
+        "question": "What is the capital of India?",
+        "options": ["Mumbai", "Chennai", "New Delhi", "Kolkata"],
+        "answer": "New Delhi"
+    },
+    {
+        "category": "General Knowledge",
+        "question": "How many colors are in a rainbow?",
+        "options": ["5", "6", "7", "8"],
+        "answer": "7"
+    },
+    {
+        "category": "General Knowledge",
+        "question": "Which is the largest ocean?",
+        "options": ["Indian", "Atlantic", "Pacific", "Arctic"],
+        "answer": "Pacific"
+    },
+    {
+        "category": "General Knowledge",
+        "question": "Which animal is called King of the Jungle?",
+        "options": ["Tiger", "Lion", "Elephant", "Leopard"],
+        "answer": "Lion"
+    },
+    {
+        "category": "General Knowledge",
+        "question": "Which country has the Eiffel Tower?",
+        "options": ["Italy", "France", "Japan", "India"],
+        "answer": "France"
+    },
+    {
+        "category": "General Knowledge",
+        "question": "How many days are in a leap year?",
+        "options": ["364", "365", "366", "367"],
+        "answer": "366"
+    },
+    {
+        "category": "General Knowledge",
+        "question": "What is the national animal of India?",
+        "options": ["Lion", "Tiger", "Elephant", "Peacock"],
+        "answer": "Tiger"
     },
 
-    {
-        "question": "Which is the safest password?",
-        "options": [
-            "123456",
-            "password123",
-            "A long and unique password"
-        ],
-        "answer": "A long and unique password",
-        "tip": "Use long, unique passwords for your accounts."
-    },
+    # MATHS
 
     {
-        "question": "Someone asks for your OTP through a phone call. What should you do?",
-        "options": [
-            "Share the OTP",
-            "Never share the OTP",
-            "Send your password"
-        ],
-        "answer": "Never share the OTP",
-        "tip": "Your OTP is private. Never share it with anyone."
+        "category": "Maths",
+        "question": "What is 25 × 4?",
+        "options": ["50", "75", "100", "125"],
+        "answer": "100"
+    },
+    {
+        "category": "Maths",
+        "question": "What is 144 ÷ 12?",
+        "options": ["10", "11", "12", "14"],
+        "answer": "12"
+    },
+    {
+        "category": "Maths",
+        "question": "What is the square of 9?",
+        "options": ["18", "72", "81", "99"],
+        "answer": "81"
+    },
+    {
+        "category": "Maths",
+        "question": "What is 15 + 27?",
+        "options": ["32", "42", "45", "52"],
+        "answer": "42"
+    },
+    {
+        "category": "Maths",
+        "question": "What is 100 - 36?",
+        "options": ["54", "64", "74", "84"],
+        "answer": "64"
+    },
+    {
+        "category": "Maths",
+        "question": "What is 12 × 12?",
+        "options": ["124", "144", "154", "164"],
+        "answer": "144"
+    },
+    {
+        "category": "Maths",
+        "question": "What is 50% of 200?",
+        "options": ["50", "75", "100", "150"],
+        "answer": "100"
     },
 
-    {
-        "question": "An unknown person asks for your home address online. What should you do?",
-        "options": [
-            "Share your address",
-            "Share your phone number",
-            "Keep personal information private"
-        ],
-        "answer": "Keep personal information private",
-        "tip": "Never share private details with strangers online."
-    },
+    # SCIENCE
 
     {
-        "question": "What should you do if someone bullies you online?",
-        "options": [
-            "Join the bullying",
-            "Report it and tell a trusted adult",
-            "Share the post"
-        ],
-        "answer": "Report it and tell a trusted adult",
-        "tip": "Report cyberbullying and seek help from a trusted adult."
+        "category": "Science",
+        "question": "Which gas do plants absorb?",
+        "options": ["Oxygen", "Nitrogen", "Carbon dioxide", "Hydrogen"],
+        "answer": "Carbon dioxide"
+    },
+    {
+        "category": "Science",
+        "question": "What is the chemical formula of water?",
+        "options": ["CO2", "H2O", "O2", "NaCl"],
+        "answer": "H2O"
+    },
+    {
+        "category": "Science",
+        "question": "Which organ pumps blood?",
+        "options": ["Brain", "Lungs", "Heart", "Kidney"],
+        "answer": "Heart"
+    },
+    {
+        "category": "Science",
+        "question": "Which planet is called the Red Planet?",
+        "options": ["Mars", "Venus", "Earth", "Saturn"],
+        "answer": "Mars"
+    },
+    {
+        "category": "Science",
+        "question": "What is the boiling point of water at sea level?",
+        "options": ["50°C", "75°C", "100°C", "150°C"],
+        "answer": "100°C"
+    },
+    {
+        "category": "Science",
+        "question": "Which part of a plant absorbs water?",
+        "options": ["Leaves", "Flowers", "Roots", "Fruits"],
+        "answer": "Roots"
     },
 
-    {
-        "question": "How can you make your account safer?",
-        "options": [
-            "Enable two-factor authentication",
-            "Share your password",
-            "Use the same password everywhere"
-        ],
-        "answer": "Enable two-factor authentication",
-        "tip": "Two-factor authentication adds an extra layer of security."
-    },
+    # MOVIES
 
     {
-        "question": "You receive an unexpected file from a stranger. What should you do?",
+        "category": "Movies",
+        "question": "Which movie features Jack Sparrow?",
         "options": [
-            "Open it immediately",
-            "Forward it",
-            "Don't open it; verify the sender"
+            "Titanic", "Avatar",
+            "Pirates of the Caribbean", "Frozen"
         ],
-        "answer": "Don't open it; verify the sender",
-        "tip": "Unexpected files may be unsafe. Verify the sender first."
+        "answer": "Pirates of the Caribbean"
+    },
+    {
+        "category": "Movies",
+        "question": "Which movie features Elsa?",
+        "options": ["Frozen", "Moana", "Coco", "Toy Story"],
+        "answer": "Frozen"
+    },
+    {
+        "category": "Movies",
+        "question": "Which Indian movie features Chitti?",
+        "options": ["Sivaji", "Enthiran", "Vikram", "Leo"],
+        "answer": "Enthiran"
+    },
+    {
+        "category": "Movies",
+        "question": "Which movie features Pandora?",
+        "options": ["Avatar", "Jumanji", "Titanic", "Inception"],
+        "answer": "Avatar"
+    },
+    {
+        "category": "Movies",
+        "question": "Which movie features Iron Man?",
+        "options": ["Frozen", "Avengers", "Titanic", "Joker"],
+        "answer": "Avengers"
     },
 
-    {
-        "question": "Someone creates a fake account using your photo. What should you do?",
-        "options": [
-            "Ignore it",
-            "Report the account",
-            "Give them your password"
-        ],
-        "answer": "Report the account",
-        "tip": "Report fake accounts and inform a trusted adult."
-    },
+    # CYBER SAFETY
 
     {
-        "question": "What should you do when using public Wi-Fi?",
-        "options": [
-            "Share passwords",
-            "Avoid sensitive activities on untrusted networks",
-            "Access every unknown website"
-        ],
-        "answer": "Avoid sensitive activities on untrusted networks",
-        "tip": "Be careful when using public Wi-Fi."
+        "category": "Cyber Safety",
+        "question": "Should you share your OTP with strangers?",
+        "options": ["Yes", "No", "Sometimes", "Only online"],
+        "answer": "No"
     },
-
     {
+        "category": "Cyber Safety",
         "question": "What is phishing?",
         "options": [
-            "A type of online scam",
-            "A computer game",
-            "A social media app"
+            "Online scam", "Computer game",
+            "Social media app", "Search engine"
         ],
-        "answer": "A type of online scam",
-        "tip": "Phishing tricks people into revealing private information."
+        "answer": "Online scam"
     },
-
     {
-        "question": "Should you use the same password for every account?",
+        "category": "Cyber Safety",
+        "question": "Which password is safer?",
         "options": [
-            "Yes",
-            "No, use different passwords",
-            "Only for social media"
+            "123456", "password",
+            "A long unique password", "Your name"
         ],
-        "answer": "No, use different passwords",
-        "tip": "Use a different password for each important account."
+        "answer": "A long unique password"
     },
-
     {
-        "question": "You see a suspicious website asking for your bank details. What should you do?",
+        "category": "Cyber Safety",
+        "question": "What should you do with suspicious links?",
         "options": [
-            "Enter the details",
-            "Close the website and verify it",
-            "Share your OTP"
+            "Click immediately",
+            "Share with friends",
+            "Avoid and verify them",
+            "Enter your password"
         ],
-        "answer": "Close the website and verify it",
-        "tip": "Never enter sensitive details on suspicious websites."
+        "answer": "Avoid and verify them"
     },
-
     {
-        "question": "What should you do before downloading an app?",
+        "category": "Cyber Safety",
+        "question": "What does 2FA mean?",
         "options": [
-            "Check its source and permissions",
-            "Download from any unknown link",
-            "Ignore all warnings"
+            "Two Factor Authentication",
+            "Two File Access",
+            "Fast File Application",
+            "Two Friends Account"
         ],
-        "answer": "Check its source and permissions",
-        "tip": "Download apps from trusted sources and review permissions."
-    },
-
-    {
-        "question": "A stranger sends you a suspicious QR code. What should you do?",
-        "options": [
-            "Scan it immediately",
-            "Verify its source first",
-            "Send it to everyone"
-        ],
-        "answer": "Verify its source first",
-        "tip": "Check who sent a QR code before scanning it."
-    },
-
-    {
-        "question": "What should you do with your social media privacy settings?",
-        "options": [
-            "Review and manage them",
-            "Make everything public",
-            "Share your login details"
-        ],
-        "answer": "Review and manage them",
-        "tip": "Review privacy settings regularly."
-    },
-
-    {
-        "question": "You receive a suspicious email from someone pretending to be your bank. What should you do?",
-        "options": [
-            "Click its link",
-            "Reply with bank details",
-            "Contact the bank through its official channel"
-        ],
-        "answer": "Contact the bank through its official channel",
-        "tip": "Contact your bank using its official app or phone number."
-    },
-
-    {
-        "question": "What is two-factor authentication?",
-        "options": [
-            "An extra account security step",
-            "A type of computer virus",
-            "A social media filter"
-        ],
-        "answer": "An extra account security step",
-        "tip": "Two-factor authentication helps protect your account."
-    },
-
-    {
-        "question": "Someone asks you to install an unknown app to receive a prize. What should you do?",
-        "options": [
-            "Install it immediately",
-            "Avoid it and verify the offer",
-            "Give the person your OTP"
-        ],
-        "answer": "Avoid it and verify the offer",
-        "tip": "Don't install unknown apps just because someone promises a prize."
-    },
-
-    {
-        "question": "What should you do if you accidentally share your password?",
-        "options": [
-            "Do nothing",
-            "Change it immediately and secure your account",
-            "Share it again"
-        ],
-        "answer": "Change it immediately and secure your account",
-        "tip": "Change compromised passwords immediately and enable extra security."
-    },
-
-    {
-        "question": "Which information should you avoid sharing publicly?",
-        "options": [
-            "Your OTP and passwords",
-            "A general hobby",
-            "A favorite movie"
-        ],
-        "answer": "Your OTP and passwords",
-        "tip": "Keep passwords, OTPs and sensitive personal information private."
+        "answer": "Two Factor Authentication"
     }
 ]
 
 
-# ---------------- SESSION STATE ----------------
+# =====================================
+# SESSION STATE
+# =====================================
 
-if "started" not in st.session_state:
-    st.session_state.started = False
+defaults = {
+    "started": False,
+    "submitted": False,
+    "round_id": 0,
+    "last_questions": []
+}
 
-if "submitted" not in st.session_state:
-    st.session_state.submitted = False
-
-if "last_questions" not in st.session_state:
-    st.session_state.last_questions = []
+for key, value in defaults.items():
+    if key not in st.session_state:
+        st.session_state[key] = value
 
 
-def start_new_round():
+# =====================================
+# GAME FUNCTIONS
+# =====================================
 
-    # Avoid repeating the exact same set in consecutive rounds
-    available = [
-        q for q in question_bank
-        if q["question"] not in st.session_state.last_questions
-    ]
+def prepare_questions(category):
 
-    if len(available) < 10:
-        available = question_bank.copy()
+    if category == "All Categories":
 
-    selected = random.sample(available, 10)
+        pool = QUESTION_BANK.copy()
+
+        previous = st.session_state.last_questions
+
+        fresh_pool = [
+            q for q in pool
+            if q["question"] not in previous
+        ]
+
+        # Avoid repeating the previous round when possible
+        if len(fresh_pool) >= 10:
+            pool = fresh_pool
+
+        round_size = min(10, len(pool))
+
+    else:
+
+        pool = [
+            q for q in QUESTION_BANK
+            if q["category"] == category
+        ]
+
+        # Use all available questions if fewer than 10
+        round_size = min(10, len(pool))
+
+    if round_size == 0:
+        return False
+
+    selected = random.sample(pool, round_size)
 
     st.session_state.questions = selected
+    st.session_state.round_size = round_size
 
     st.session_state.last_questions = [
         q["question"] for q in selected
     ]
 
+    st.session_state.round_id += 1
     st.session_state.started = True
     st.session_state.submitted = False
 
+    return True
 
-# ---------------- HOME PAGE ----------------
 
-if not st.session_state.started:
+def reset_game():
 
-    st.markdown(
-        "<h2 style='text-align:center;'>🎮 WELCOME, CYBER HERO!</h2>",
-        unsafe_allow_html=True
-    )
+    st.session_state.started = False
+    st.session_state.submitted = False
 
-    st.markdown(
-        "<p style='text-align:center;'>"
-        "Are you ready to defeat online scams?"
-        "</p>",
-        unsafe_allow_html=True
-    )
+    keys_to_delete = [
+        "questions",
+        "round_size",
+        "human_score",
+        "ai_score",
+        "human_results",
+        "ai_results",
+        "ai_answers",
+        "human_answers"
+    ]
 
-    st.write("### 👤 Enter Your Details")
+    for key in keys_to_delete:
+        if key in st.session_state:
+            del st.session_state[key]
 
-    name = st.text_input("Your Name")
-    college = st.text_input("College Name")
-    department = st.text_input("Department")
 
-    st.markdown("### 🌟 Your Mission")
-    st.info(
-        "Answer 10 cyber safety questions, earn points, "
-        "and become a Cyber Safety Hero!"
-    )
+def calculate_results(answers):
 
-    if st.button("🚀 START CHALLENGE"):
+    human_score = 0
+    ai_score = 0
 
-        if name.strip() and college.strip() and department.strip():
+    human_results = []
+    ai_results = []
+    ai_answers = []
 
-            st.session_state.name = name
-            st.session_state.college = college
-            st.session_state.department = department
+    for i, q in enumerate(st.session_state.questions):
 
-            start_new_round()
-            st.rerun()
+        correct = q["answer"]
 
+        # Human answer
+        human_correct = answers[i] == correct
+
+        if human_correct:
+            human_score += 1
+
+        human_results.append(human_correct)
+
+        # Simulated AI answer
+        if random.random() < 0.75:
+            ai_answer = correct
         else:
-            st.warning("Please fill in all details.")
+            wrong_options = [
+                option for option in q["options"]
+                if option != correct
+            ]
+            ai_answer = random.choice(wrong_options)
+
+        ai_answers.append(ai_answer)
+
+        ai_correct = ai_answer == correct
+
+        if ai_correct:
+            ai_score += 1
+
+        ai_results.append(ai_correct)
+
+    st.session_state.human_score = human_score
+    st.session_state.ai_score = ai_score
+
+    st.session_state.human_results = human_results
+    st.session_state.ai_results = ai_results
+    st.session_state.ai_answers = ai_answers
+
+    st.session_state.human_answers = answers
+
+    st.session_state.submitted = True
 
 
-# ---------------- QUIZ PAGE ----------------
+# =====================================
+# HEADER
+# =====================================
 
-elif not st.session_state.submitted:
+st.markdown("""
+<div style="text-align:center;padding:15px;">
 
-    st.markdown(
-        "<h2 style='text-align:center;'>⚡ CYBER HERO QUIZ ⚡</h2>",
-        unsafe_allow_html=True
-    )
+    <span class="doll">💃</span>
+    <span class="walking-doll">👧</span>
+    <span class="robot">🤖</span>
+    <span class="walking-doll">🧒</span>
+    <span class="doll">🕺</span>
 
-    st.write(f"👋 Welcome, {st.session_state.name}!")
+    <br>
 
-    st.progress(0.1)
+    <span class="sparkle">⭐</span>
+    <span class="sparkle">💖</span>
+    <span class="sparkle">✨</span>
 
-    questions = st.session_state.questions
+</div>
 
-    with st.form("quiz_form"):
+<h1 style="text-align:center;font-size:48px;">
+    HUMAN vs AI
+</h1>
 
-        answers = []
-
-        for i, q in enumerate(questions):
-
-            st.markdown(f"### 🟣 Question {i + 1}/10")
-
-            st.write(q["question"])
-
-            selected = st.radio(
-                "Choose your answer:",
-                q["options"],
-                key=f"answer_{i}"
-            )
-
-            answers.append(selected)
-
-            st.markdown("---")
-
-        submit = st.form_submit_button("🏆 SUBMIT ANSWERS")
-
-    if submit:
-
-        score = 0
-        tips = []
-
-        for i, q in enumerate(questions):
-
-            if answers[i] == q["answer"]:
-                score += 1
-            else:
-                tips.append(q["tip"])
-
-        st.session_state.score = score
-        st.session_state.tips = tips
-        st.session_state.submitted = True
-
-        st.rerun()
-
-
-# ---------------- RESULT PAGE ----------------
-
-if st.session_state.started and st.session_state.submitted:
-
-    score = st.session_state.score
-
-    st.balloons()
-
-    st.markdown(
-        "<h1 style='text-align:center;'>🎉 AMAZING WORK! 🎉</h1>",
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        "<div style='text-align:center;font-size:60px;'>"
-        "🦸 🤖 🏆 🛡️"
-        "</div>",
-        unsafe_allow_html=True
-    )
-
-    st.write(f"### 👤 Name: {st.session_state.name}")
-    st.write(f"🏫 College: {st.session_state.college}")
-    st.write(f"🎓 Department: {st.session_state.department}")
-
-    st.markdown("---")
-
-    st.metric("🏆 YOUR SCORE", f"{score}/10")
-
-    st.progress(score / 10)
-
-    if score >= 8:
-
-        st.success("🟢 CYBER HERO LEVEL: EXPERT!")
-        st.write("Excellent! You are a Cyber Safety Champion!")
-
-    elif score >= 5:
-
-        st.info("🟡 CYBER HERO LEVEL: GOOD!")
-        st.write("Good work! Keep learning and improving.")
-
-    else:
-
-        st.warning("🔴 CYBER HERO LEVEL: BEGINNER")
-        st.write("Keep practicing. You can become a Cyber Hero!")
-
-    st.markdown("---")
-
-    st.subheader("💡 YOUR PERSONALIZED SAFETY TIPS")
-
-    if not st.session_state.tips:
-
-        st.success("Perfect! All your answers are correct!")
-
-    else:
-
-        for tip in st.session_state.tips:
-            st.write("✨", tip)
-
-    st.markdown("---")
-
-    st.markdown(
-        "<div style='text-align:center;'>"
-        "<h1>📜 CERTIFICATE</h1>"
-        "<h2>CYBER SHIELD</h2>"
-        "<h3>Certificate of Completion</h3>"
-        "<p>Congratulations!</p>"
-        "<h2>" + st.session_state.name + "</h2>"
-        "<p>Successfully completed the Cyber Safety Challenge.</p>"
-        "<h2>🛡️ CYBER HERO 🛡️</h2>"
-        "</div>",
-        unsafe_allow_html=True
-    )
-
-    st.markdown("---")
-
-    if st.button("🔄 PLAY AGAIN - NEW QUESTIONS"):
-
-        start_new_round()
-        st.rerun()
-
-
-# ---------------- FOOTER ----------------
+<h3 style="text-align:center;">
+    🎮 THE ULTIMATE BATTLE ARENA 🎮
+</h3>
+""", unsafe_allow_html=True)
 
 st.markdown("---")
 
-st.markdown(
-    "<p style='text-align:center;'>"
-    "🌈 CYBER SHIELD | Stay Safe • Stay Smart • Stay Protected 🛡️"
-    "</p>",
-    unsafe_allow_html=True
-)
+
+# =====================================
+# HOME SCREEN
+# =====================================
+
+if not st.session_state.started:
+
+    st.markdown("""
+    <div style="
+        background:white;
+        border:3px solid #f3b5df;
+        border-radius:25px;
+        padding:25px;
+        text-align:center;
+        box-shadow:0 5px 20px #f5d9ec;
+    ">
+
+        <div style="font-size:65px;">
+            👧 ⚔️ 🤖
+        </div>
+
+        <h2>WHO IS SMARTER?</h2>
+
+        <p style="font-size:18px;">
+            Challenge the AI robot and become the champion!
+        </p>
+
+        <div style="font-size:30px;">
+            ⭐ 🏆 ⭐
+        </div>
+
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("## 👤 PLAYER DETAILS")
+
+    name = st.text_input(
+        "Enter your name",
+        placeholder="Your name here..."
+    )
+
+    st.markdown("## 🎯 SELECT YOUR CATEGORY")
+
+    category = st.selectbox(
+        "Choose your challenge",
+        [
+            "All Categories",
+            "General Knowledge",
+            "Maths",
+            "Science",
+            "Movies",
+            "Cyber Safety"
+        ]
+    )
+
+    st.markdown("---")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("""
+        <div class="player-card">
+
+            <div style="font-size:65px;">👧</div>
+
+            <h2>HUMAN PLAYER</h2>
+
+            <p>Think fast and answer correctly!</p>
+
+            <div style="font-size:30px;">💗 ⭐ 💗</div>
+
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col2:
+        st.markdown("""
+        <div class="ai-card">
+
+            <div style="font-size:65px;">🤖</div>
+
+            <h2>AI ROBOT</h2>
+
+            <p>Challenge the digital opponent!</p>
+
+            <div style="font-size:30px;">💙 ⚡ 💙</div>
+
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.write("")
+
+    if st.button("🚀 START THE BATTLE"):
+
+        if not name.strip():
+            st.warning("Please enter your name!")
+
+        else:
+
+            st.session_state.player_name = name.strip()
+            st.session_state.category = category
+
+            success = prepare_questions(category)
+
+            if success:
+                st.rerun()
+            else:
+                st.error("No questions are available. Please try another category.")
+
+
+# =====================================
+# QUIZ SCREEN
+# =====================================
+
+elif not st.session_state.submitted:
+
+    questions = st.session_state.questions
+    total = st.session_state.round_size
+
+    st.markdown(f"## ⚔️ ROUND {st.session_state.round_id}")
+
+    st.write(f"👤 Player: {st.session_state.player_name}")
+
+    st.info(
+        f"Answer all {total} questions. "
+        "The AI will answer the same questions!"
+    )
+
+    with st.form(
+        key=f"battle_form_{st.session_state.round_id}"
+    ):
+
+        human_answers = []
+
+        for i, q in enumerate(questions):
+
+            st.markdown(f"### 🟣 QUESTION {i+1} / {total}")
+
+            st.caption("📚 Category: " + q["category"])
+
+            st.markdown(f"**{q['question']}**")
+
+            answer = st.radio(
+                "Choose your answer:",
+                q["options"],
+                key=f"answer_{st.session_state.round_id}_{i}"
+            )
+
+            human_answers.append(answer)
+
+            st.markdown("---")
+
+        submit = st.form_submit_button("⚡ SUBMIT MY ANSWERS")
+
+    if submit:
+
+        calculate_results(human_answers)
+        st.rerun()
+
+
+# =====================================
+# RESULT SCREEN
+# =====================================
+
+if st.session_state.started and st.session_state.submitted:
+
+    human = st.session_state.human_score
+    ai = st.session_state.ai_score
+    total = st.session_state.round_size
+
+    st.balloons()
+
+    st.markdown("""
+    <div style="text-align:center;">
+
+        <span class="doll">💃</span>
+        <span class="robot">🏆</span>
+        <span class="doll">🕺</span>
+
+        <h1>BATTLE RESULTS!</h1>
+
+    </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown(f"""
+        <div class="player-card">
+
+            <div style="font-size:60px;">👧</div>
+
+            <h2>HUMAN</h2>
+
+            <h1>{human}/{total}</h1>
+
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col2:
+        st.markdown(f"""
+        <div class="ai-card">
+
+            <div style="font-size:60px;">🤖</div>
+
+            <h2>AI ROBOT</h2>
+
+            <h1>{ai}/{total}</h1>
+
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    st.markdown("## 🏆 FINAL WINNER")
+
+    if human > ai:
+
+        st.success(
+            f"🎉 {st.session_state.player_name.upper()} WINS!"
+        )
+
+        st.markdown("""
+        <div style="text-align:center;">
+
+            <div style="font-size:75px;">
+                👧 🏆 💃
+            </div>
+
+            <h2>HUMAN CHAMPION!</h2>
+
+            <p>You defeated the AI robot!</p>
+
+        </div>
+        """, unsafe_allow_html=True)
+
+    elif ai > human:
+
+        st.info("🤖 AI ROBOT WINS THIS ROUND!")
+
+        st.markdown("""
+        <div style="text-align:center;">
+
+            <div style="font-size:75px;">
+                🤖 🏆 ⚡
+            </div>
+
+            <h2>AI CHAMPION!</h2>
+
+            <p>The AI won this round!</p>
+
+        </div>
+        """, unsafe_allow_html=True)
+
+    else:
+
+        st.warning("🤝 IT'S A DRAW!")
+
+        st.markdown("""
+        <div style="text-align:center;">
+
+            <div style="font-size:75px;">
+                👧 🤝 🤖
+            </div>
+
+            <h2>BOTH ARE CHAMPIONS!</h2>
+
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # SCORE COMPARISON
+
+    st.markdown("## 📊 SCORE COMPARISON")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric("Human Score", f"{human}/{total}")
+        st.progress(human / total)
+
+    with col2:
+        st.metric("AI Score", f"{ai}/{total}")
+        st.progress(ai / total)
+
+    st.markdown("---")
+
+    # ANSWER REVIEW
+
+    st.markdown("## 📝 ANSWER REVIEW")
+
+    for i, q in enumerate(st.session_state.questions):
+
+        with st.expander(f"Question {i+1}: {q['question']}"):
+
+            st.write(
+                "👧 Your answer: "
+                + st.session_state.human_answers[i]
+            )
+
+            st.write(
+                "🤖 AI answer: "
+                + st.session_state.ai_answers[i]
+            )
+
+            st.write(
+                "✔ Correct answer: "
+                + q["answer"]
+            )
+
+            if st.session_state.human_results[i]:
+                st.success("Your answer is correct!")
+            else:
+                st.error("Your answer is incorrect.")
+
+            if st.session_state.ai_results[i]:
+                st.success("AI answered correctly.")
+            else:
+                st.error("AI answered incorrectly.")
+
+    st.markdown("---")
+
+    st.info(
+        "Project note: The AI opponent is a simulated opponent "
+        "created using Python. It has a 75% chance of choosing "
+        "the correct answer. It is not a trained AI model."
+    )
+
+    if st.button("🔄 PLAY AGAIN - NEW QUESTIONS"):
+
+        reset_game()
+        st.rerun()
+
+
+# =====================================
+# FOOTER
+# =====================================
+
+st.markdown("---")
+
+st.markdown("""
+<div style="text-align:center;padding:20px;">
+
+    <div style="font-size:40px;">
+        💗 🤖 💗
+    </div>
+
+    <h3>HUMAN vs AI ARENA</h3>
+
+    <p>
+        THINK SMART • PLAY SMART • WIN THE BATTLE
+    </p>
+
+    <p>✨ College Expo Project ✨</p>
+
+</div>
+""", unsafe_allow_html=True)
